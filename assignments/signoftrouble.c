@@ -1,3 +1,7 @@
+// Jake Lille
+// COP3502
+// 8/25/2023
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,45 +11,66 @@
 #define MAX_CHAR 100002
 #define ASCII_SIZE 128
 
-// Rough Structure of program
+// function prototypes
+int *allocateString(int size);
 
-/*
-    1. Get old user input for old sign message (all caps, make sure to account spaces) FGETS
-    2. Store user input in a const char array
-    3. Get user input for new sign message
-    4. Store into another const char array 
-    5. Use string methods (strcmp) to find all values = 0 (equal), ignore -1 and 1
-    6. Use iteration, for each 0 comparison strcmp, increment a counter
-    7. Upon ending program, return the counter value
-*/
-
-char *allocateString(int size);
-
-
+int compareFreq(int *freq1, int *freq2);
 
 int main(void){
-    char *inputString = allocateString(MAX_CHAR);
-    char *freqArray1 = allocateString(ASCII_SIZE);
-    char *freqArray2 = allocateString(ASCII_SIZE);
-
+    //temp string for input,  make sure 100002 chars allocated
+    char *inputString = malloc(MAX_CHAR*sizeof(char));
+    //init 2 freq arrays via. function, passing ASCII size of 128
+    int *freqArray1 = allocateString(ASCII_SIZE);
+    int *freqArray2 = allocateString(ASCII_SIZE);
+    
+    //prompt user, read input via. fgets from stdin stream
     printf("%s", "ENTER ORIGINAL MESSAGE: ");
     fgets(inputString, MAX_CHAR, stdin);
 
-    for(int i = 0; i < strlen(inputString); i++){
+    //strlen once (efficiency)
+    int len = strlen(inputString);
+
+    //fill freq array with ASCII values
+    // IGNORE 10 (\n) and 32 (space) as we don't need these as letters
+    // 65 - 90 uppercase ASCII (MAKE SURE TO INCLUDE 90!! FOR Z)
+    for(int i = 0; i < len; i++){
         freqArray1[(int)inputString[i]]++;
     }
- 
-    for(int i = 0; i < ASCII_SIZE; i++){
-        printf("%d, %d\n", i,freqArray1[i]);
+
+    // prompt for new string
+    printf("%s", "ENTER NEW MESSAGE: ");
+    fgets(inputString, MAX_CHAR, stdin);
+
+    len = strlen(inputString);
+
+    for(int i = 0; i < len; i++){
+        freqArray2[(int)inputString[i]]++;
     }
 
-    //char *newString = malloc(MAX_CHAR*sizeof(char));
+    // value for printing here, compareFreq func passing both arrays
+    int value = compareFreq(freqArray1, freqArray2);
 
+    printf("\n%d", value);
     return 0;
 }
 
-char *allocateString(int size){
-    char *string = malloc(size*sizeof(char));
+// function prototypes
 
-    return string; 
+int *allocateString(int size){
+    // calloc for sake of all 0s in memory instead of random addresses
+    int *array = calloc(sizeof(char), size);
+
+    //return ptr to access in main
+    return array; 
+}
+
+int compareFreq(int *freq1, int *freq2){
+    int count = 0;
+    // only interested in 64 (A) -> (Z) (90)
+    for(int i = 64; i<=90; i++){
+        if(freq1[i] < freq2[i]){
+            count += freq2[i] - freq1[i];
+        }
+    }
+    return count;
 }
