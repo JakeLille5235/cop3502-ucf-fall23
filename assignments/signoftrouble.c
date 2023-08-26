@@ -51,6 +51,12 @@ int main(void){
     int value = compareFreq(freqArray1, freqArray2);
 
     printf("\n%d", value);
+
+    // Free memory, very important
+    free(freqArray1);
+    free(freqArray2);
+    free(inputString);
+    
     return 0;
 }
 
