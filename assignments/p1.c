@@ -58,17 +58,44 @@ int main(void){
     int row, start, end, seat; // 1 - 100,000
     char name[50]; // longest name including null can be 50 chars
 
+    // BUY - > 
+    /*
+        1. first check if memory allocated for row
+        2. if yes, 
+    
+    */
+
+   int allocatedRows[MAXROWS+1] = {0}; //keep track of allocataed rows for freeing memory
+   int aRCounter = 0;
+
     while(1){
         scanf("%6s", command);
         if(strcmp(command, "BUY") == 0){
             scanf("%d %d %d %49s", &row, &start, &end, name);
             //printf("%d %d %d %s", row, start, end, name);
 
-            order* myOrder = make_order(start, end, name);
+            order* myOrder = make_order(start, end, name); 
 
             // check if lilleLounge[x] already allocated
             if(lilleLounge[row] == NULL){
                 make_empty_row();
+
+                // if new row being made, obviously empty so can skip call to can_add_order
+                add_order(lilleLounge[row], myOrder);
+                //update counter to keep track of what row #s to free at end of program
+                allocatedRows[aRCounter] = row;
+                aRCounter++;
+
+            } else {
+                if(can_add_order(lilleLounge[row] ,myOrder) == 1){
+                    // row can be added! add order to list, etc.
+                    add_order(lilleLounge[row], myOrder);
+                    printf("%s", "SUCCESS\n");
+                } else {
+                    // row cannot be added, conflict, print failure
+                    printf("%s", "FAILURE\n");
+                    free_order(myOrder);
+                }
             }
 
             printf("%s", myOrder->name);
@@ -81,6 +108,11 @@ int main(void){
         }
         if(strcmp(command, "QUIT") == 0){
             // free memory here, call approp functions
+            for(int i = 0; i < aRCounter; i++){
+                free_row(lilleLounge[allocatedRows[i]]);
+            }
+
+            free(lilleLounge);
 
             return 0;
         }
@@ -90,6 +122,10 @@ int main(void){
     return 0;
 }
 
+
+// function defs
+
+// memory alloc / setting up / init things
 order* make_order(int start, int end, char* this_name){
     order* newOrder = calloc(1, sizeof(order));
 
@@ -101,21 +137,72 @@ order* make_order(int start, int end, char* this_name){
 }
 
 theaterrow* make_empty_row(){
-    theaterrow* allocatedRow = calloc(INITSIZE, sizeof(theaterrow));
-    allocatedRow->list_orders = calloc(INITSIZE, sizeof(order));
+    theaterrow* allocatedRow = calloc(1, sizeof(theaterrow));
+    allocatedRow->list_orders = calloc(INITSIZE, sizeof(order*));
     allocatedRow->cur_size = 0;
-    allocatedRow->max_size = 10;
+    allocatedRow->max_size = INITSIZE;
     return allocatedRow;
+}
+
+int conflict(order* order1, order* order2){
+    if ((order2->s_seat <= order1->e_seat && order2->e_seat >= order1->s_seat) || (order2->s_seat >= order1->s_seat && order2->s_seat <= order1->e_seat)){
+        return 1; // there is a conflict
+    }
+    return 0; // no conflict
 }
 
 
 void add_order(theaterrow* this_row, order* this_order){
 
-    if(this_row->cur_size >= this_row->max_size){
-        realloc(this_row->list_orders, (this_row->max_size*2)*sizeof(order));
+    if(this_row->cur_size == this_row->max_size){
+        this_row->max_size *= 2; 
+        this_row->list_orders = realloc(this_row->list_orders, this_row->max_size*sizeof(order*));
+        if(this_row->list_orders == NULL){
+           return 0;
+        }
+        
     }
     this_row->list_orders[this_row->cur_size] = this_order;
     this_row->cur_size++;
+    return 1;
+}
+
+int can_add_order(theaterrow* this_row, order* this_order){
+    for(int i = 0; i< this_row->cur_size; i++){
+        if(conflict(this_order, this_row->list_orders[i]) == 1){
+            return 0; // cannot be added!
+        }
+    }
+
+    return 1; // can be added!
+}
+
+int contains(order* myorder, int seat_no) {
+    if (seat_no >= myorder->s_seat && seat_no <= myorder->e_seat) {
+        return 1; // seat_no is within the range
+    } else {
+        return 0; // seat_no is not within the range
+    }
+}
+
+char* get_owner(theaterrow** theater, int row, int seat_num){
+    for(int i = 0; i < theater[row]->cur_size; i++){
+        if(contains(theater[row]->list_orders[i], seat_num) == 1){
+            return theater[row]->list_orders[i]->name;
+            break;
+        }
+    }
+    return "No one";
+}
+
+char* get_row_owner(theaterrow* this_row, int seat_num){
+    for(int i = 0; i < this_row->cur_size; i++){
+        if(contains(this_row->list_orders[i], seat_num) == 1){
+            return this_row->list_orders[i]->name; 
+            break;
+        }
+    }
+    return "No one";
 }
 
 
@@ -125,5 +212,9 @@ void free_order(order* this_order){
 }
 
 void free_row(theaterrow* this_row){
-
+    for(int i=0; i<this_row->cur_size; i++){
+        free_order(this_row->list_orders[i]);
+    }
+    free(this_row->list_orders);
+    free(this_row);
 }
