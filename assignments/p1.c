@@ -1,3 +1,9 @@
+/*
+    JAKE LILLE
+    SEPTEMBER 11TH, 2023
+    COP 3502 P1 ASSIGNMENT - ASSIGNEDSEATING.C
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -58,12 +64,6 @@ int main(void){
     int row, start, end, seat; // 1 - 100,000
     char name[50]; // longest name including null can be 50 chars
 
-    // BUY - > 
-    /*
-        1. first check if memory allocated for row
-        2. if yes, 
-    
-    */
 
    int allocatedRows[MAXROWS+1] = {0}; //keep track of allocataed rows for freeing memory
    int aRCounter = 0;
@@ -145,7 +145,7 @@ theaterrow* make_empty_row(){
     allocatedRow->list_orders = calloc(INITSIZE, sizeof(order*));
     allocatedRow->cur_size = 0;
     allocatedRow->max_size = INITSIZE;
-    return allocatedRow;
+    return allocatedRow; // make sure to assign this to the row index in main
 }
 
 int conflict(order* order1, order* order2){
@@ -171,6 +171,7 @@ void add_order(theaterrow* this_row, order* this_order){
     //return 1;
 }
 
+// if row already allocated, use this function
 int can_add_order(theaterrow* this_row, order* this_order){
     for(int i = 0; i< this_row->cur_size; i++){
         if(conflict(this_order, this_row->list_orders[i]) == 1){
@@ -189,6 +190,8 @@ int contains(order* myorder, int seat_no) {
     }
 }
 
+// thought having two of these functions redundant, but abiding by rubric/instructions here they are
+// one accesses via arrowing down theater ptr, other operatoes by having row
 char* get_owner(theaterrow** theater, int row, int seat_num){
     for(int i = 0; i < theater[row]->cur_size; i++){
         if(contains(theater[row]->list_orders[i], seat_num) == 1){
@@ -217,8 +220,9 @@ void free_order(order* this_order){
 
 void free_row(theaterrow* this_row){
     for(int i=0; i<this_row->cur_size; i++){
-        free_order(this_row->list_orders[i]);
+        free_order(this_row->list_orders[i]); // USE free_order to account for string allocated for name
     }
     free(this_row->list_orders);
     free(this_row);
+    // this function should cover all memory tied to row, make sure to free the entire theatre end of program
 }
