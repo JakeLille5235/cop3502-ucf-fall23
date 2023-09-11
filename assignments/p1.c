@@ -68,6 +68,8 @@ int main(void){
    int allocatedRows[MAXROWS+1] = {0}; //keep track of allocataed rows for freeing memory
    int aRCounter = 0;
 
+   
+
     while(1){
         scanf("%6s", command);
         if(strcmp(command, "BUY") == 0){
@@ -78,13 +80,14 @@ int main(void){
 
             // check if lilleLounge[x] already allocated
             if(lilleLounge[row] == NULL){
-                make_empty_row();
+                lilleLounge[row] = make_empty_row();
 
                 // if new row being made, obviously empty so can skip call to can_add_order
                 add_order(lilleLounge[row], myOrder);
                 //update counter to keep track of what row #s to free at end of program
                 allocatedRows[aRCounter] = row;
                 aRCounter++;
+                printf("%s", "SUCCESS\n");
 
             } else {
                 if(can_add_order(lilleLounge[row] ,myOrder) == 1){
@@ -98,13 +101,14 @@ int main(void){
                 }
             }
 
-            printf("%s", myOrder->name);
+            //printf("%s", myOrder->name);
 
 
         }
         if(strcmp(command, "LOOKUP") == 0){
             scanf("%d %d", &row, &seat);
             //printf("%d %d", row, seat);
+            printf("%s\n", get_owner(lilleLounge, row, seat));
         }
         if(strcmp(command, "QUIT") == 0){
             // free memory here, call approp functions
@@ -145,7 +149,7 @@ theaterrow* make_empty_row(){
 }
 
 int conflict(order* order1, order* order2){
-    if ((order2->s_seat <= order1->e_seat && order2->e_seat >= order1->s_seat) || (order2->s_seat >= order1->s_seat && order2->s_seat <= order1->e_seat)){
+   if (order2->s_seat <= order1->e_seat && order2->e_seat >= order1->s_seat){
         return 1; // there is a conflict
     }
     return 0; // no conflict
@@ -158,13 +162,13 @@ void add_order(theaterrow* this_row, order* this_order){
         this_row->max_size *= 2; 
         this_row->list_orders = realloc(this_row->list_orders, this_row->max_size*sizeof(order*));
         if(this_row->list_orders == NULL){
-           return 0;
+           //return 0;
         }
         
     }
     this_row->list_orders[this_row->cur_size] = this_order;
     this_row->cur_size++;
-    return 1;
+    //return 1;
 }
 
 int can_add_order(theaterrow* this_row, order* this_order){
