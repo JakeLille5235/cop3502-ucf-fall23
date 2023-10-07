@@ -13,6 +13,7 @@ int permCounter = 0; // how many permutations...
 
 // functions... 
 void printPerms(int perm[], int used[], int k, int n);
+void print(int array[], int n);
 
 int validPopcorn();
 int checkConflict();
@@ -22,27 +23,47 @@ int main(void){
     int antiPairs, counter = 0;
     scanf("%d %d", &nMovie, &antiPairs);
 
+    int used[nMovie];
+    int perms[nMovie];
+    for(int i = 0; i < nMovie; i++){
+        used[i] = 0;
+    }
+
     while(counter < nMovie){
         char tempName[20]; // for name
         int tempPop; // for popcorn correlating to name...
         
         scanf("%s %d", tempName, &tempPop);
 
+        strcpy(attendNames[counter],tempName);
+
         if(tempPop ==  1){
-            strcp(popCornNames[popCornCounter], tempName);
+            strcpy(popCornNames[popCornCounter], tempName);
             popCornCounter++;
         }
+
 
         counter++;
     }
 
+    printPerms(perms, used, 0, nMovie);
+
 
     // MAKE SURE TO CHECK IF EMPTY FOR NULL CHAR
-    if(popCornNames[6][0] == '\0'){
+   /* if(popCornNames[6][0] == '\0'){
         printf("%s", "HellO!");
     }
-
+    */
     return 0;
+}
+
+
+
+void print(int array[], int n) {
+    int i;
+    for (i=0; i<n; i++)
+        printf("%s ", attendNames[array[i]]);
+    printf("\n");
 }
 
 
@@ -67,3 +88,23 @@ void printPerms(int perm[], int used[], int k, int n) {
         }
     }
 }
+
+/*void printPerms(char names[][20], int used[], int k, int n) {
+    // Base case.
+    if (k == n) {
+        for (int i = 0; i < n; i++) {
+            printf("%s ", names[used[i]]);
+        }
+        printf("\n");
+    }
+    // Recursive case - fill in slot k.
+    else {
+        for (int i = 0; i < n; i++) {
+            if (!used[i]) {
+                used[i] = 1;
+                printPerms(names, used, k + 1, n);
+                used[i] = 0;
+            }
+        }
+    }
+}*/
