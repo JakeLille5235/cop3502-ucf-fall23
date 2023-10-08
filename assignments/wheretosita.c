@@ -13,7 +13,7 @@
 int nMovie, antiPairs; // how many people
 char attendNames[10][20];
 char popCornNames[10][20]; // in the test-case all 10 have popcorn... make sure to check row if empty or contained
-char antiSeat[20][20];
+int antiSeat[10][2];
 int popCornCounter = 0; // var to count how many people have popcorn, so we do not have to iterate 10 times through entire array everytime
 int permCounter = 0; // how many permutations... 
 int globalPermFlag = 0;
@@ -27,6 +27,7 @@ int isValidSeating(int perms[], int index);
 int isValid(int perms[], int n);
 int checkConflict();
 int checkPopList(char * name);
+int findName(char* name);
 
 int main(void){
 
@@ -57,20 +58,14 @@ int main(void){
 
     counter = 0;
     
-    int tracker = 0;
     while(counter < antiPairs){
         char tempName1[20];
         char tempName2[20];
 
         scanf("%s %s", tempName1, tempName2);
         // even odd = pair that can't sit together
-
-        
-            strcpy(antiSeat[tracker], tempName1);
-            tracker++;
-            strcpy(antiSeat[tracker], tempName2);
-            tracker++;
-        
+        antiSeat[counter][0] = findName(tempName1);
+        antiSeat[counter][1] = findName(tempName2); // stores the indicies of names in a 10 x 2 array
         counter++;
     }
 
@@ -84,19 +79,24 @@ int main(void){
     }
     */
 
-    puts("");
+   /*
+   for(int i = 0; i < antiPairs; i++){
+    printf("%d: %s %s\n", i, attendNames[antiSeat[i][0]], attendNames[antiSeat[i][1]]);
+   } */
 
-    printf("\n%s", antiSeat[0]);
-    printf("\n%s", antiSeat[1]);
-    printf("\n%s", antiSeat[2]);
-    printf("\n%s", antiSeat[3]);
-    printf("\n%s", antiSeat[4]);
-    printf("\n%s", antiSeat[5]);
 
     return 0;
 }
 
-
+// return index of name in array
+int findName(char* name){
+    for(int i = 0; i < nMovie; i++){
+        if(strcmp(name, attendNames[i]) == 0){
+            return i;
+        }
+    }
+    return -1;
+}
 
 
 
@@ -125,98 +125,37 @@ int popCornCheck(int* perms){
     return 1;
 }
 
-int checkBanned(char * name){ // just checks if on list 
-    for(int i = 0 ; i < antiPairs*2; i++){
-        if(strcmp(name, antiSeat[i]) == 0){
-            return i; // on list, return the index found. if even, the +1 index is their antipair, if odd the -1 index is their anti
+
+int pairCheck(int perms[]){
+    for(int i = 0; i < nMovie; i++){
+        for(int j = 0; j < antiPairs*2; j++){
+            if(strcmp(attendNames[perms[i]], attendNames[antiSeat[j][0]]) == 0){
+                // match, find if issue...
+                
+                // no one on left, check only right
+                if(i-1 < 0){
+                    if(strcmp(attendNames[perms[i+1]], attendNames[antiSeat[j][1]]) == 0){
+                        return 0;
+                    }
+                    continue;
+                }
+                if(i+1 == nMovie){
+                    if(strcmp(attendNames[perms[i-1]], attendNames[antiSeat[j][1]]) == 0){
+                        return 0;
+                    }
+                    continue;
+                }
+                if(strcmp(attendNames[perms[i-1]], attendNames[antiSeat[j][1]]) == 0 || strcmp(attendNames[perms[i+1]], attendNames[antiSeat[j][1]]) == 0){
+                    return 0;
+                }
+                continue;
         }
         continue;
-    }
-    return -1;
-}
-
-int pairCheck(int *perms){
-    for(int i = 0; i < nMovie; i++){
-        if(i - 1 < 0){ // condition no one to left
-            int index = checkBanned(attendNames[perms[i]]); 
-            if(index != -1) { // there is a banned constriant...
-                if(index % 2 == 0){ // even index
-                    if(strcmp(attendNames[perms[i+1]], antiSeat[index+1]) == 0){
-                        return 0; // constraint found
-                    }
-                    continue;
-                }
-                if(index % 2 != 0){ // odd index
-                    if(strcmp(attendNames[perms[i+1]], antiSeat[index-1]) == 0){
-                        return 0; // constraint found
-                    }
-                    continue;
-                }
-                //continue;
-            }
-            continue;
-        }
-        if(i+1 == nMovie){ // no one to right
-            int index = checkBanned(attendNames[perms[i]]);
-            if(index != -1){ //  banned constraint
-                if(index % 2 == 0){ // even index
-                    if(strcmp(attendNames[perms[i-1]], antiSeat[index+1]) == 0){
-                        return 0; // constraint found
-                    }
-                    continue;
-                }
-                if(index % 2 != 0){ // odd index
-                    if(strcmp(attendNames[perms[i-1]], antiSeat[index-1]) == 0){
-                        return 0; // constraint found
-                    }
-                    continue;
-                }
-            
-            }
-            continue;
-        } else { // left and right
-            int index = checkBanned(attendNames[perms[i]]);
-            if(index != -1){ //  banned constraint
-                if(index % 2 == 0){ // even index
-                    if(strcmp(attendNames[perms[i+1]], antiSeat[index+1]) == 0){
-                        return 0; // constraint found
-                    }
-                    if(strcmp(attendNames[perms[i-1]], antiSeat[index+1]) == 0){
-                        return 0; // constraint found
-                    }
-                    continue;
-                }
-                if(index % 2 != 0){ // odd index
-                    if(strcmp(attendNames[perms[i-1]], antiSeat[index-1]) == 0){
-                        return 0; // constraint found
-                    }
-                    if(strcmp(attendNames[perms[i+1]], antiSeat[index-1]) == 0){
-                        return 0; // constraint found
-                    }
-                    continue;
-                }
-            }
         }
     }
     return 1;
 }
 
-/*int isValidSeating(int perms[], int index){
-    for(int i = 0; i < antiPairs*2; i++){
-        if(strcmp(attendNames[perms[index]], antiSeat[i]) == 0){ // if match
-            if(i%2 == 0){ // even case meaning array+1 is the no sit
-                if(index-1!=0 && strcmp(attendNames[perms[index-1]], antiSeat[i+1]) == 0 || index+1 == nMovie && strcmp(attendNames[perms[index+1]], antiSeat[i+1]) == 0 ){
-                    return 0;
-                } 
-            } else{
-                    if(index-1!=0 && strcmp(attendNames[perms[index-1]], antiSeat[i-1]) == 0 || index+1 == nMovie && strcmp(attendNames[perms[index+1]], antiSeat[i-1]) == 0){
-                    return 0;
-                }
-        }
-    }
-}
-return 1; 
-}*/
 
 void print(int array[], int n) {
     int i;
@@ -225,7 +164,7 @@ void print(int array[], int n) {
     if(popCornCheck(array) == 1 && pairCheck(array) == 1){
         for (i=0; i<n; i++){
         //validPopcorn(array[i], popCornCounter);
-        printf("%s ", attendNames[array[i]]);
+        //printf("%s ", attendNames[array[i]]);
     
         }
         permCounter++;
