@@ -130,6 +130,7 @@ int checkBanned(char * name){ // just checks if on list
         if(strcmp(name, antiSeat[i]) == 0){
             return i; // on list, return the index found. if even, the +1 index is their antipair, if odd the -1 index is their anti
         }
+        continue;
     }
     return -1;
 }
@@ -151,8 +152,9 @@ int pairCheck(int *perms){
                     }
                     continue;
                 }
-                continue;
+                //continue;
             }
+            continue;
         }
         if(i+1 == nMovie){ // no one to right
             int index = checkBanned(attendNames[perms[i]]);
@@ -169,8 +171,9 @@ int pairCheck(int *perms){
                     }
                     continue;
                 }
-                continue;
+            
             }
+            continue;
         } else { // left and right
             int index = checkBanned(attendNames[perms[i]]);
             if(index != -1){ //  banned constraint
